@@ -1,12 +1,10 @@
 import itertools
-import json
-
 import pandas as pd
 import streamlit as st
 
 
 # 1) Standaard indelingen "ingebakken" in de app
-#    Voeg hier zo veel rijen toe als je wilt.
+#    Hier zet je de vak-indelingen. Dit vervangt de Excel.
 INITIAL_INDELINGEN = [
     {
         "Transport Type": "Blisters (Bak: 400x300)",
@@ -29,7 +27,7 @@ INITIAL_INDELINGEN = [
         "Indeling (L x B)": "2x4",
         "Vak Afmetingen (L x B x Hoogte)": "163 x 51 x 52",
     },
-    # Voeg hier de rest van je indelingen toe in exact dezelfde structuur
+    # HIER kun je al je andere indelingen toevoegen als extra dictionaries
 ]
 
 
@@ -44,7 +42,7 @@ def get_initial_df() -> pd.DataFrame:
 def parse_dims(dim_str):
     """
     '52 x 56 x 30' -> (52.0, 56.0, 30.0)
-    Staat ook tolerant tegenover '52x56x30' of extra spaties.
+    Werkt ook bij '52x56x30' of extra spaties.
     """
     if pd.isna(dim_str):
         return None, None, None
@@ -65,8 +63,8 @@ def parse_dims(dim_str):
 
 def can_fit(item_dims, vak_dims) -> bool:
     """
-    Check of item (L,B,H) in een vak past, met draaien toegestaan
-    (alle 6 permutaties van L,B,H worden geprobeerd).
+    Check of item (L,B,H) in een vak past, met draaien toegestaan.
+    We proberen alle permutaties van (L,B,H).
     """
     item_L, item_B, item_H = item_dims
     vak_L, vak_B, vak_H = vak_dims
@@ -84,11 +82,11 @@ def main():
     st.markdown(
         """
 Vul de **lengte, breedte en hoogte** van je product in (bijvoorbeeld in mm).  
-De tool zoekt dan de **indeling waar het product in past** en die **de meeste vakken** heeft.
+De tool zoekt de **indeling waar het product in past** en die **de meeste vakken** heeft.
         """
     )
 
-    # 2) Inputs voor het product
+    # 1. Productafmetingen invoeren
     col1, col2, col3 = st.columns(3)
     with col1:
         item_L = st.number_input("Lengte (L)", min_value=0.0, step=1.0)
@@ -97,11 +95,11 @@ De tool zoekt dan de **indeling waar het product in past** en die **de meeste va
     with col3:
         item_H = st.number_input("Hoogte (H)", min_value=0.0, step=1.0)
 
-    # 3) Dataframe in session_state houden zodat edits blijven staan
+    # 2. Dataframe in session_state houden
     if "indelingen_df" not in st.session_state:
         st.session_state["indelingen_df"] = get_initial_df()
 
-    # 4) Editor om indelingen te beheren
+    # 3. Editor om indelingen te beheren
     st.subheader("Indelingen beheren")
 
     with st.expander("Bewerk indelingen (aan/uit zetten, toevoegen, wijzigen)", expanded=False):
@@ -111,7 +109,7 @@ De tool zoekt dan de **indeling waar het product in past** en die **de meeste va
 
         edited_df = st.data_editor(
             st.session_state["indelingen_df"],
-            num_rows="dynamic",  # nieuwe rijen kunnen toegevoegd worden
+            num_rows="dynamic",  # nieuwe rijen toegestaan
             use_container_width=True,
             column_config={
                 "Actief": st.column_config.CheckboxColumn("Actief", default=True),
@@ -127,7 +125,7 @@ De tool zoekt dan de **indeling waar het product in past** en die **de meeste va
             st.session_state["indelingen_df"] = get_initial_df()
             st.experimental_rerun()
 
-    # 5) Berekenen van beste indeling
+    # 4. Berekenen van beste indeling
     if st.button("Bereken beste indeling"):
         if item_L <= 0 or item_B <= 0 or item_H <= 0:
             st.warning("Vul alle drie de afmetingen groter dan 0 in.")
@@ -135,11 +133,10 @@ De tool zoekt dan de **indeling waar het product in past** en die **de meeste va
 
         df = st.session_state["indelingen_df"].copy()
 
-        # Alleen actieve rijen gebruiken
+        # Alleen actieve rijen
         if "Actief" in df.columns:
             df = df[df["Actief"] == True]
 
-        # Rijen zonder benodigde info eruit
         required_cols = [
             "Vak Afmetingen (L x B x Hoogte)",
             "Aantal vakken",
@@ -152,7 +149,7 @@ De tool zoekt dan de **indeling waar het product in past** en die **de meeste va
             st.error("Er zijn geen actieve indelingen met geldige data.")
             return
 
-        # Vak afmetingen parsen
+        # Vak afmetingen parsen naar getallen
         dims = df["Vak Afmetingen (L x B x Hoogte)"].apply(parse_dims)
         df[["vak_L", "vak_B", "vak_H"]] = pd.DataFrame(dims.tolist(), index=df.index)
         df = df.dropna(subset=["vak_L", "vak_B", "vak_H"])
@@ -163,7 +160,7 @@ De tool zoekt dan de **indeling waar het product in past** en die **de meeste va
 
         item_dims = (item_L, item_B, item_H)
 
-        # Filter alleen indelingen waarin het product in 1 vak past
+        # Filter op indelingen waar het item in 1 vak past
         mask = df.apply(
             lambda row: can_fit(
                 item_dims, (row["vak_L"], row["vak_B"], row["vak_H"])
@@ -176,7 +173,7 @@ De tool zoekt dan de **indeling waar het product in past** en die **de meeste va
             st.error("Er is geen indeling gevonden waarin dit product past.")
             return
 
-        # Sorteer: meeste vakken eerst, daarna kleinste vakafmetingen als tie-breaker
+        # Sorteer: meeste vakken eerst, dan kleinste vak om te breken bij gelijkspel
         passende = passende.sort_values(
             by=["Aantal vakken", "vak_L", "vak_B", "vak_H"],
             ascending=[False, True, True, True],
