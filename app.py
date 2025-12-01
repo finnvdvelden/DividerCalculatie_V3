@@ -1,10 +1,10 @@
 import itertools
+
 import pandas as pd
 import streamlit as st
 
 
-# 1) Standaard indelingen "ingebakken" in de app
-#    Hier zet je de vak-indelingen. Dit vervangt de Excel.
+# Alle indelingen "hardcoded" in de app
 INITIAL_INDELINGEN = [
     {"Transport Type": "Blisters (Bak: 400x300)", "Artikelnummer": "105 030", "Aantal vakken": 24, "Indeling (L x B)": "6x4", "Vak Afmetingen (L x B x Hoogte)": "52 x 56 x 30"},
     {"Transport Type": "Blisters (Bak: 400x300)", "Artikelnummer": "106 022", "Aantal vakken": 16, "Indeling (L x B)": "4x4", "Vak Afmetingen (L x B x Hoogte)": "76 x 51 x 52"},
@@ -59,7 +59,6 @@ INITIAL_INDELINGEN = [
 ]
 
 
-
 def get_initial_df() -> pd.DataFrame:
     """Zet de standaardlijst om naar een DataFrame en voeg een Actief kolom toe."""
     df = pd.DataFrame(INITIAL_INDELINGEN)
@@ -111,7 +110,11 @@ def main():
     st.markdown(
         """
 Vul de **lengte, breedte en hoogte** van je product in (bijvoorbeeld in mm).  
-De tool zoekt de **indeling waar het product in past** en die **de meeste vakken** heeft.
+De tool zoekt de **indeling waar het product in past** volgens deze volgorde:
+
+1. Blisters (als het daar in past, altijd een blister)
+2. Anders andere bakken (Foam Inlays)
+3. Alleen pallets als het product niet in een bak past
         """
     )
 
@@ -154,7 +157,7 @@ De tool zoekt de **indeling waar het product in past** en die **de meeste vakken
             st.session_state["indelingen_df"] = get_initial_df()
             st.experimental_rerun()
 
-    # 4. Berekenen van beste indeling
+    # 4. Berekenen van beste indeling met voorkeursregels
     if st.button("Bereken beste indeling"):
         if item_L <= 0 or item_B <= 0 or item_H <= 0:
             st.warning("Vul alle drie de afmetingen groter dan 0 in.")
@@ -171,6 +174,7 @@ De tool zoekt de **indeling waar het product in past** en die **de meeste vakken
             "Aantal vakken",
             "Artikelnummer",
             "Indeling (L x B)",
+            "Transport Type",
         ]
         df = df.dropna(subset=[c for c in required_cols if c in df.columns])
 
@@ -190,25 +194,44 @@ De tool zoekt de **indeling waar het product in past** en die **de meeste vakken
         item_dims = (item_L, item_B, item_H)
 
         # Filter op indelingen waar het item in 1 vak past
-        mask = df.apply(
+        fit_mask = df.apply(
             lambda row: can_fit(
                 item_dims, (row["vak_L"], row["vak_B"], row["vak_H"])
             ),
             axis=1,
         )
-        passende = df[mask].copy()
+        passende = df[fit_mask].copy()
 
         if passende.empty:
             st.error("Er is geen indeling gevonden waarin dit product past.")
             return
 
-        # Sorteer: meeste vakken eerst, dan kleinste vak om te breken bij gelijkspel
-        passende = passende.sort_values(
+        # Categorieën bepalen
+        is_blister = passende["Transport Type"].str.contains("Blisters", case=False, na=False)
+        is_foam = passende["Transport Type"].str.contains("Foam Inlays", case=False, na=False)
+        is_bak = is_blister | is_foam
+        is_pallet = passende["Transport Type"].str.contains("Pallets", case=False, na=False)
+
+        # 1) Altijd eerst Blisters als het kan
+        if passende[is_blister].shape[0] > 0:
+            kandidaten = passende[is_blister].copy()
+        # 2) Anders andere bakken (Foam Inlays)
+        elif passende[is_bak].shape[0] > 0:
+            kandidaten = passende[is_bak].copy()
+        # 3) Alleen pallets als er echt geen bak past
+        elif passende[is_pallet].shape[0] > 0:
+            kandidaten = passende[is_pallet].copy()
+        else:
+            st.error("Er is geen geschikte indeling gevonden volgens de voorkeurregels.")
+            return
+
+        # Binnen de gekozen categorie: meeste vakken eerst, dan kleinste vak
+        kandidaten = kandidaten.sort_values(
             by=["Aantal vakken", "vak_L", "vak_B", "vak_H"],
             ascending=[False, True, True, True],
         )
 
-        beste = passende.iloc[0]
+        beste = kandidaten.iloc[0]
 
         st.subheader("Beste gevonden indeling")
         st.write(f"**Transport Type:** {beste.get('Transport Type', '')}")
@@ -220,7 +243,7 @@ De tool zoekt de **indeling waar het product in past** en die **de meeste vakken
             f"{beste.get('Vak Afmetingen (L x B x Hoogte)', '')}"
         )
 
-        with st.expander("Toon top 10 passende indelingen"):
+        with st.expander("Toon top 10 passende indelingen (binnen gekozen categorie)"):
             kolommen = [
                 "Transport Type",
                 "Artikelnummer",
@@ -229,8 +252,8 @@ De tool zoekt de **indeling waar het product in past** en die **de meeste vakken
                 "Vak Afmetingen (L x B x Hoogte)",
                 "Actief",
             ]
-            kolommen = [c for c in kolommen if c in passende.columns]
-            st.dataframe(passende[kolommen].head(10).reset_index(drop=True))
+            kolommen = [c for c in kolommen if c in kandidaten.columns]
+            st.dataframe(kandidaten[kolommen].head(10).reset_index(drop=True))
 
 
 if __name__ == "__main__":
