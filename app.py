@@ -6,29 +6,58 @@ import streamlit as st
 # 1) Standaard indelingen "ingebakken" in de app
 #    Hier zet je de vak-indelingen. Dit vervangt de Excel.
 INITIAL_INDELINGEN = [
-    {
-        "Transport Type": "Blisters (Bak: 400x300)",
-        "Artikelnummer": "105 030",
-        "Aantal vakken": 24,
-        "Indeling (L x B)": "6x4",
-        "Vak Afmetingen (L x B x Hoogte)": "52 x 56 x 30",
-    },
-    {
-        "Transport Type": "Blisters (Bak: 400x300)",
-        "Artikelnummer": "106 022",
-        "Aantal vakken": 16,
-        "Indeling (L x B)": "4x4",
-        "Vak Afmetingen (L x B x Hoogte)": "76 x 51 x 52",
-    },
-    {
-        "Transport Type": "Blisters (Bak: 400x300)",
-        "Artikelnummer": "106 021",
-        "Aantal vakken": 8,
-        "Indeling (L x B)": "2x4",
-        "Vak Afmetingen (L x B x Hoogte)": "163 x 51 x 52",
-    },
-    # HIER kun je al je andere indelingen toevoegen als extra dictionaries
+    {"Transport Type": "Blisters (Bak: 400x300)", "Artikelnummer": "105 030", "Aantal vakken": 24, "Indeling (L x B)": "6x4", "Vak Afmetingen (L x B x Hoogte)": "52 x 56 x 30"},
+    {"Transport Type": "Blisters (Bak: 400x300)", "Artikelnummer": "106 022", "Aantal vakken": 16, "Indeling (L x B)": "4x4", "Vak Afmetingen (L x B x Hoogte)": "76 x 51 x 52"},
+    {"Transport Type": "Blisters (Bak: 400x300)", "Artikelnummer": "106 021", "Aantal vakken": 8,  "Indeling (L x B)": "2x4", "Vak Afmetingen (L x B x Hoogte)": "163 x 51 x 52"},
+    {"Transport Type": "Blisters (Bak: 400x300)", "Artikelnummer": "106 024", "Aantal vakken": 12, "Indeling (L x B)": "3x4", "Vak Afmetingen (L x B x Hoogte)": "105 x 51 x 52"},
+
+    {"Transport Type": "Foam Inlays (Bak: 400x300)", "Artikelnummer": "106 020", "Aantal vakken": 6,  "Indeling (L x B)": "3x2", "Vak Afmetingen (L x B x Hoogte)": "105 x 113 x 52"},
+    {"Transport Type": "Foam Inlays (Bak: 400x300)", "Artikelnummer": "106 023", "Aantal vakken": 4,  "Indeling (L x B)": "2x2", "Vak Afmetingen (L x B x Hoogte)": "113 x 63 x 52"},
+    {"Transport Type": "Foam Inlays (Bak: 400x300)", "Artikelnummer": "106 026", "Aantal vakken": 32, "Indeling (L x B)": "4x8", "Vak Afmetingen (L x B x Hoogte)": "76 x 20 x 52"},
+    {"Transport Type": "Foam Inlays (Bak: 400x300)", "Artikelnummer": "106 025", "Aantal vakken": 8,  "Indeling (L x B)": "4x2", "Vak Afmetingen (L x B x Hoogte)": "76 x 113 x 52"},
+
+    {"Transport Type": "Foam Inlays (Bak: 400x300)", "Artikelnummer": "107 025", "Aantal vakken": 8,  "Indeling (L x B)": "4x2", "Vak Afmetingen (L x B x Hoogte)": "76 x 113 x 95"},
+    {"Transport Type": "Foam Inlays (Bak: 400x300)", "Artikelnummer": "107 024", "Aantal vakken": 12, "Indeling (L x B)": "3x4", "Vak Afmetingen (L x B x Hoogte)": "105 x 51 x 95"},
+    {"Transport Type": "Foam Inlays (Bak: 400x300)", "Artikelnummer": "107 023", "Aantal vakken": 4,  "Indeling (L x B)": "2x2", "Vak Afmetingen (L x B x Hoogte)": "113 x 63 x 95"},
+    {"Transport Type": "Foam Inlays (Bak: 400x300)", "Artikelnummer": "107 022", "Aantal vakken": 16, "Indeling (L x B)": "4x4", "Vak Afmetingen (L x B x Hoogte)": "76 x 51 x 95"},
+    {"Transport Type": "Foam Inlays (Bak: 400x300)", "Artikelnummer": "107 021", "Aantal vakken": 8,  "Indeling (L x B)": "2x4", "Vak Afmetingen (L x B x Hoogte)": "163 x 51 x 95"},
+    {"Transport Type": "Foam Inlays (Bak: 400x300)", "Artikelnummer": "107 020", "Aantal vakken": 6,  "Indeling (L x B)": "3x2", "Vak Afmetingen (L x B x Hoogte)": "105 x 113 x 95"},
+    {"Transport Type": "Foam Inlays (Bak: 400x300)", "Artikelnummer": "107 026", "Aantal vakken": 32, "Indeling (L x B)": "4x8", "Vak Afmetingen (L x B x Hoogte)": "76 x 20 x 95"},
+
+    {"Transport Type": "Pallets (Halve Europallet)", "Artikelnummer": "108 029", "Aantal vakken": 4,  "Indeling (L x B)": "4x1", "Vak Afmetingen (L x B x Hoogte)": "120 x 730 x 190"},
+    {"Transport Type": "Pallets (Europallet)",       "Artikelnummer": "108 029", "Aantal vakken": 7,  "Indeling (L x B)": "1x7", "Vak Afmetingen (L x B x Hoogte)": "120 x 730 x 190"},
+
+    {"Transport Type": "Pallets (Halve Europallet)", "Artikelnummer": "108 027", "Aantal vakken": 12, "Indeling (L x B)": "3x4", "Vak Afmetingen (L x B x Hoogte)": "155 x 155 x 190"},
+    {"Transport Type": "Pallets (Europallet)",       "Artikelnummer": "108 027", "Aantal vakken": 24, "Indeling (L x B)": "4x6", "Vak Afmetingen (L x B x Hoogte)": "155 x 155 x 190"},
+
+    {"Transport Type": "Pallets (Halve Europallet)", "Artikelnummer": "108 026", "Aantal vakken": 6,  "Indeling (L x B)": "3x2", "Vak Afmetingen (L x B x Hoogte)": "155 x 360 x 190"},
+    {"Transport Type": "Pallets (Europallet)",       "Artikelnummer": "108 026", "Aantal vakken": 12, "Indeling (L x B)": "2x6", "Vak Afmetingen (L x B x Hoogte)": "155 x 360 x 190"},
+
+    {"Transport Type": "Pallets (Halve Europallet)", "Artikelnummer": "108 025", "Aantal vakken": 8,  "Indeling (L x B)": "2x4", "Vak Afmetingen (L x B x Hoogte)": "255 x 155 x 190"},
+    {"Transport Type": "Pallets (Europallet)",       "Artikelnummer": "108 025", "Aantal vakken": 16, "Indeling (L x B)": "4x4", "Vak Afmetingen (L x B x Hoogte)": "255 x 155 x 190"},
+
+    {"Transport Type": "Pallets (Halve Europallet)", "Artikelnummer": "108 024", "Aantal vakken": 4,  "Indeling (L x B)": "2x2", "Vak Afmetingen (L x B x Hoogte)": "255 x 360 x 190"},
+    {"Transport Type": "Pallets (Europallet)",       "Artikelnummer": "108 024", "Aantal vakken": 8,  "Indeling (L x B)": "2x4", "Vak Afmetingen (L x B x Hoogte)": "255 x 360 x 190"},
+
+    {"Transport Type": "Pallets (Halve Europallet)", "Artikelnummer": "108 023", "Aantal vakken": 2,  "Indeling (L x B)": "2x1", "Vak Afmetingen (L x B x Hoogte)": "255 x 730 x 190"},
+    {"Transport Type": "Pallets (Europallet)",       "Artikelnummer": "108 023", "Aantal vakken": 4,  "Indeling (L x B)": "1x4", "Vak Afmetingen (L x B x Hoogte)": "255 x 730 x 190"},
+
+    {"Transport Type": "Pallets (Halve Europallet)", "Artikelnummer": "108 022", "Aantal vakken": 4,  "Indeling (L x B)": "1x4", "Vak Afmetingen (L x B x Hoogte)": "525 x 155 x 190"},
+    {"Transport Type": "Pallets (Europallet)",       "Artikelnummer": "108 022", "Aantal vakken": 8,  "Indeling (L x B)": "4x2", "Vak Afmetingen (L x B x Hoogte)": "525 x 155 x 190"},
+
+    {"Transport Type": "Pallets (Halve Europallet)", "Artikelnummer": "108 021", "Aantal vakken": 2,  "Indeling (L x B)": "1x2", "Vak Afmetingen (L x B x Hoogte)": "525 x 360 x 190"},
+    {"Transport Type": "Pallets (Europallet)",       "Artikelnummer": "108 021", "Aantal vakken": 4,  "Indeling (L x B)": "2x2", "Vak Afmetingen (L x B x Hoogte)": "525 x 360 x 190"},
+
+    {"Transport Type": "Pallets (Halve Europallet)", "Artikelnummer": "108 020", "Aantal vakken": 1,  "Indeling (L x B)": "1x1", "Vak Afmetingen (L x B x Hoogte)": "525 x 730 x 190"},
+    {"Transport Type": "Pallets (Europallet)",       "Artikelnummer": "108 020", "Aantal vakken": 2,  "Indeling (L x B)": "1x2", "Vak Afmetingen (L x B x Hoogte)": "525 x 730 x 190"},
+
+    {"Transport Type": "Pallets (Halve Europallet)", "Artikelnummer": "108 031", "Aantal vakken": 16, "Indeling (L x B)": "4x4", "Vak Afmetingen (L x B x Hoogte)": "120 x 155 x 190"},
+    {"Transport Type": "Pallets (Europallet)",       "Artikelnummer": "108 031", "Aantal vakken": 28, "Indeling (L x B)": "4x7", "Vak Afmetingen (L x B x Hoogte)": "120 x 155 x 190"},
+
+    {"Transport Type": "Pallets (Halve Europallet)", "Artikelnummer": "108 030", "Aantal vakken": 8,  "Indeling (L x B)": "4x2", "Vak Afmetingen (L x B x Hoogte)": "120 x 360 x 190"},
+    {"Transport Type": "Pallets (Europallet)",       "Artikelnummer": "108 030", "Aantal vakken": 14, "Indeling (L x B)": "2x7", "Vak Afmetingen (L x B x Hoogte)": "120 x 360 x 190"},
 ]
+
 
 
 def get_initial_df() -> pd.DataFrame:
